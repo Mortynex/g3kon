@@ -39,21 +39,23 @@ export class t18<T extends Translations> {
 
     const translation = currentValue;
 
-    if (typeof currentValue === 'function') {
+    if (typeof translation === 'function') {
       if (!args || !Array.isArray(args)) {
         return 'INVALID INTERPOLATION FUNCTION ARGUMENTS';
       }
 
-      const withInterpolationTranslation = currentValue(...args);
+      const withInterpolationTranslation = translation(...args);
       if (typeof withInterpolationTranslation !== 'string') {
         return 'INVALID VALUE';
       }
+
+      return withInterpolationTranslation;
     }
 
-    if (typeof currentValue === 'object') {
+    if (typeof translation === 'object') {
       return 'INVALID PATH';
     }
 
-    return currentValue;
+    return translation;
   }
 }
