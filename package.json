@@ -1,7 +1,7 @@
 {
-  "name": "typescript-npm-package-template",
+  "name": "t18",
   "version": "0.0.0-development",
-  "description": "A template for creating npm packages using TypeScript and VSCode",
+  "description": "Internationalization typescript library",
   "main": "./lib/src/index.js",
   "files": [
     "lib/**/*"
@@ -20,13 +20,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ryansonshine/typescript-npm-package-template.git"
+    "url": "git+https://github.com/Mortynex/t18.git"
   },
   "license": "MIT",
   "author": {
-    "name": "Ryan Sonshine",
-    "email": "ryansonshine@users.noreply.github.com",
-    "url": "https://github.com/ryansonshine"
+    "name": "Mortynex",
+    "email": "46408007+Mortynex@users.noreply.github.com",
+    "url": "https://github.com/Mortynex"
   },
   "engines": {
     "node": ">=12.0"
@@ -43,9 +43,9 @@
     "codecov"
   ],
   "bugs": {
-    "url": "https://github.com/ryansonshine/typescript-npm-package-template/issues"
+    "url": "https://github.com/Mortynex/t18/issues"
   },
-  "homepage": "https://github.com/ryansonshine/typescript-npm-package-template#readme",
+  "homepage": "https://github.com/ryansonshine/t18#readme",
   "dependencies": {},
   "devDependencies": {
     "@types/jest": "^26.0.24",
