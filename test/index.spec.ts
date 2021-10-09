@@ -1,13 +1,34 @@
-import { myPackage } from '../src';
+import { t18 } from '../src';
 
 describe('index', () => {
-  describe('myPackage', () => {
-    it('should return a string containing the message', () => {
-      const message = 'Hello';
+  describe('t18', () => {
+    it('should translate key to message', () => {
+      const message = 'Hello World!';
 
-      const result = myPackage(message);
+      const translations = new t18({
+        translations: {
+          general: {
+            hello_word: 'Hello World!',
+          },
+        },
+      });
 
-      expect(result).toMatch(message);
+      expect(translations.t('general.hello_word')).toMatch(message);
+    });
+
+    it('should return welcome message with name', () => {
+      const message = (name: string) => `Welcome ${name}!`;
+      const name = 'Bob';
+
+      const translations = new t18({
+        translations: {
+          messages: {
+            welcome: message,
+          },
+        },
+      });
+
+      expect(translations.t('messages.welcome', [name])).toMatch(message(name));
     });
   });
 });
