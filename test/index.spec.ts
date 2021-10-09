@@ -63,6 +63,48 @@ describe('index', () => {
 			expect(translations.t('general.hello_world')).toBe(messageIt);
 		});
 
+		it('it should be able to get fixed t', () => {
+			const messageEn = 'Hello World!';
+			const messageEs = 'Hola Mundo!';
+			const messageIt = 'Ciao Mondo!';
+
+			const translations = new t18({
+				translations: [
+					{
+						language: 'en',
+						translation: {
+							general: {
+								hello_world: messageEn,
+							},
+						},
+						default: true,
+					},
+					{
+						language: 'es',
+						translation: {
+							general: {
+								hello_world: messageEs,
+							},
+						},
+					},
+					{
+						language: 'it',
+						translation: {
+							general: {
+								hello_world: messageIt,
+							},
+						},
+					},
+				],
+			});
+			const enT = translations.getFixedT('en');
+			expect(enT('general.hello_world')).toBe(messageEn);
+			const esT = translations.getFixedT('es');
+			expect(esT('general.hello_world')).toBe(messageEs);
+			const itT = translations.getFixedT('it');
+			expect(itT('general.hello_world')).toBe(messageIt);
+		});
+
 		it('should return welcome message with name', () => {
 			const message = (name: string) => `Welcome ${name}!`;
 			const name = 'Bob';
