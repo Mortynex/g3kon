@@ -1,15 +1,15 @@
-import { t18 } from '../src';
+import { t18Client } from '../src';
 
 describe('index', () => {
 	describe('t18', () => {
 		it('should translate key to message', () => {
 			const message = 'Hello World!';
 
-			const translations = new t18({
-				translations: [
+			const t18 = new t18Client({
+				resources: [
 					{
 						language: 'en',
-						translation: {
+						translations: {
 							general: {
 								hello_world: message,
 							},
@@ -18,7 +18,7 @@ describe('index', () => {
 				],
 			});
 
-			expect(translations.t('general.hello_world')).toBe(message);
+			expect(t18.t('general.hello_world')).toBe(message);
 		});
 
 		it('it should be able to change languages ', () => {
@@ -26,11 +26,11 @@ describe('index', () => {
 			const messageEs = 'Hola Mundo!';
 			const messageIt = 'Ciao Mondo!';
 
-			const translations = new t18({
-				translations: [
+			const t18 = new t18Client({
+				resources: [
 					{
 						language: 'en',
-						translation: {
+						translations: {
 							general: {
 								hello_world: messageEn,
 							},
@@ -39,7 +39,7 @@ describe('index', () => {
 					},
 					{
 						language: 'es',
-						translation: {
+						translations: {
 							general: {
 								hello_world: messageEs,
 							},
@@ -47,7 +47,7 @@ describe('index', () => {
 					},
 					{
 						language: 'it',
-						translation: {
+						translations: {
 							general: {
 								hello_world: messageIt,
 							},
@@ -56,11 +56,11 @@ describe('index', () => {
 				],
 			});
 
-			expect(translations.t('general.hello_world')).toBe(messageEn);
-			translations.changeLanguage('es');
-			expect(translations.t('general.hello_world')).toBe(messageEs);
-			translations.changeLanguage('it');
-			expect(translations.t('general.hello_world')).toBe(messageIt);
+			expect(t18.t('general.hello_world')).toBe(messageEn);
+			t18.changeLanguage('es');
+			expect(t18.t('general.hello_world')).toBe(messageEs);
+			t18.changeLanguage('it');
+			expect(t18.t('general.hello_world')).toBe(messageIt);
 		});
 
 		it('it should be able to get fixed t', () => {
@@ -68,11 +68,11 @@ describe('index', () => {
 			const messageEs = 'Hola Mundo!';
 			const messageIt = 'Ciao Mondo!';
 
-			const translations = new t18({
-				translations: [
+			const t18 = new t18Client({
+				resources: [
 					{
 						language: 'en',
-						translation: {
+						translations: {
 							general: {
 								hello_world: messageEn,
 							},
@@ -81,7 +81,7 @@ describe('index', () => {
 					},
 					{
 						language: 'es',
-						translation: {
+						translations: {
 							general: {
 								hello_world: messageEs,
 							},
@@ -89,7 +89,7 @@ describe('index', () => {
 					},
 					{
 						language: 'it',
-						translation: {
+						translations: {
 							general: {
 								hello_world: messageIt,
 							},
@@ -97,11 +97,11 @@ describe('index', () => {
 					},
 				],
 			});
-			const enT = translations.getFixedT('en');
+			const enT = t18.getFixedT('en');
 			expect(enT('general.hello_world')).toBe(messageEn);
-			const esT = translations.getFixedT('es');
+			const esT = t18.getFixedT('es');
 			expect(esT('general.hello_world')).toBe(messageEs);
-			const itT = translations.getFixedT('it');
+			const itT = t18.getFixedT('it');
 			expect(itT('general.hello_world')).toBe(messageIt);
 		});
 
@@ -109,20 +109,24 @@ describe('index', () => {
 			const message = (name: string) => `Welcome ${name}!`;
 			const name = 'Bob';
 
-			const translations = new t18({
-				translations: [
+			const t18 = new t18Client({
+				resources: [
 					{
 						language: 'en',
-						translation: {
+						translations: {
 							general: {
 								welcome: message,
+								sorry: {
+									idk: ':)',
+								},
 							},
 						},
 					},
 				],
 			});
-
-			expect(translations.t('general.welcome', [name])).toMatch(message(name));
+			const t = t18.getFixedT('en', 'general');
+			t('');
+			expect(t18.t('general.welcome', [name])).toMatch(message(name));
 		});
 	});
 });

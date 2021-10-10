@@ -1,89 +1,92 @@
-export interface t18Options<T, L> {
-	translations: TranslationFile<T, L>[];
+export interface t18ClientOptions<T, L> {
+	resources: TranslationResource<T, L>[] | TranslationResource<T, L>;
 }
 
-interface TranslationFile<T, L> {
+interface TranslationResource<T, L> {
 	language: L;
-	translation: T;
+	translations: T;
 	default?: boolean;
 }
 
 export interface Translations {
-	[key: string]: translations | ValidValues;
+	[key: string]: Translations | ValidValues;
+}
+
+export interface t18TranslateOptions {
+	key: string;
+	args?: any[];
+	lng: L;
 }
 
 type InterpolationFunction = (...args: any[]) => string;
 
-export type ValidValues = string | InterpolationFunction; //| ;
-
-// for t18.t()
-export type getTranslationKeys<Translation extends Translation> = Id<
-	RecKeysOf<Translation, ValidValues, ''>
->;
+export type ValidValues = string | InterpolationFunction;
 
 type Id<T> = T extends T ? { [P in keyof T]: T[P] } : never;
-
-type RecKeysOf<Dir, FileType, Prefix extends string> = {
-	[P in keyof Dir & (string | number)]: Dir[P] extends FileType
-		? `${Prefix}${P}`
-		: RecKeysOf<Dir[P], FileType, `${Prefix}${P}.`>;
-}[keyof Dir & (string | number)];
-
 type UnionOmit<Target, Props> = Target extends Props ? never : Target;
-type UnionOmitWithoutPrefix<
-	Target,
-	Props,
-	Prefix extends string
-> = Target extends Props
-	? never
-	: Target extends `${Prefix}${infer C}`
-	? C
-	: any;
+
+// for t18.t()
+export type getAllTranslationKeys<Translation extends Translation> = Id<
+	RecTransKeysOf<Translation, ValidValues, ''>
+>;
+
+type RecTransKeysOf<Trans, FileType, Prefix extends string> = {
+	[P in keyof Trans & (string | number)]: Trans[P] extends FileType
+		? `${Prefix}${P}`
+		: RecTransKeysOf<Trans[P], FileType, `${Prefix}${P}.`>;
+}[keyof Trans & (string | number)];
 
 export type getInterpolationFunctionKeys<T extends Translations> = UnionOmit<
-	getTranslationKeys<T>,
-	Id<RecKeysOf<T, string, ''>>
+	getAllTranslationKeys<T>,
+	Id<RecTransKeysOf<T, string, ''>>
 >;
+
+type RecTransKeysWithoutPrefixOf<
+	Trans,
+	FileType,
+	Prefix extends string,
+	KeyPrefix
+> = {
+	[P in keyof Trans & (string | number)]: Trans[P] extends FileType
+		? `${Prefix}${P}` extends `${KeyPrefix}${infer C}`
+			? C
+			: any
+		: RecTransKeysWithoutPrefixOf<
+				Trans[P],
+				FileType,
+				`${Prefix}${P}.`,
+				KeyPrefix
+		  >;
+}[keyof Trans & (string | number)];
 
 export type getInterpolationFunctionKeysWithoutPrefix<
 	T extends Translations,
-	Prefix extends string,
-	G
-> = UnionOmitWithoutPrefix<G, Id<RecKeysOf<T, string, ''>>, Prefix>;
+	Prefix
+> = UnionOmit<
+	Id<
+		RecTransKeysWithoutPrefixOf<T, string | InterpolationFunction, '', Prefix>
+	>,
+	Id<RecTransKeysWithoutPrefixOf<T, string, '', Prefix>>
+>;
 
-export type getFunctionParams<
+export type getNonInterpolationFunctionKeysWithoutPrefix<
 	T extends Translations,
-	Key extends getTranslationKeys<Translation>
-> = Id<FindFuncParamsOf<T, ValidValues, '', Key>>;
-
-type FindFuncParamsOf<
-	Dir,
-	FileType,
-	Prefix extends string = '',
-	Key extends string
-> = {
-	[P in keyof Dir & (string | number)]: Dir[P] extends FileType
-		? `${Prefix}${P}` extends Key
-			? Dir[P] extends (...args: infer A) => any
-				? A
-				: never
-			: never
-		: FindFuncParamsOf<Dir[P], FileType, `${Prefix}${P}.`, Key>;
-}[keyof Dir & (string | number)];
+	Prefix
+> = Id<RecTransKeysWithoutPrefixOf<T, string, '', Prefix>>;
 
 // for getFixedT :)
 
-export type getAllPossibleObjectPaths<Translations extends Translation> = Id<
-	RecAllPathsOf<Translations, ValidValues, ''>
+export type getAllKeys<Translations extends Translation> = Id<
+	RecAllKeysOf<Translations, ValidValues, ''>
 >;
 
-type RecAllPathsOf<Dir, FileType, Prefix extends string> = {
+type RecAllKeysOf<Dir, FileType, Prefix extends string> = {
 	[P in keyof Dir & (string | number)]: Dir[P] extends FileType
 		? never
-		: RecAllPathsOf<Dir[P], FileType, `${Prefix}${P}.`> | `${Prefix}${P}`;
+		: RecAllKeysOf<Dir[P], FileType, `${Prefix}${P}.`> | `${Prefix}${P}`;
 }[keyof Dir & (string | number)];
 
-export type RemovePrefix<
+export type RemoveKeyPrefix<
 	A extends string,
 	B extends string
 > = A extends `${B}${infer C}` ? C : any;
@@ -94,19 +97,43 @@ type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
 	? I
 	: never;
 
-export type getTypeIntersectionOf<Translation> = UnionToIntersection<
-	Id<RecTypesOf<Translation, ValidValues, ''>>
->;
-
-type Id<T> = T extends T ? { [P in keyof T]: T[P] } : never;
-
-type RecTypesOf<Dir, FileType, Prefix extends string> = {
-	[P in keyof Dir & (string | number)]: Dir[P] extends FileType
-		? { [K in `${Prefix}${P}`]: Dir[P] }
-		: RecTypesOf<Dir[P], FileType, `${Prefix}${P}.`>;
-}[keyof Dir & (string | number)];
-
 export type getFunctionArguments<
 	T extends Translations,
 	Key
-> = getTypeIntersectionOf<T>[Key] extends (...args: infer A) => any ? A : never;
+> = getKeyTypesObject<T>[Key] extends (...args: infer A) => any ? A : never;
+
+export type getFunctionArgumentsWithPrefix<
+	T extends Translations,
+	Key,
+	Prefix extends string
+> = getKeyTypesObjectWithPrefix<T, Prefix>[Key] extends (
+	...args: infer A
+) => any
+	? A
+	: never;
+
+export type getKeyTypesObject<Translation> = UnionToIntersection<
+	Id<RecKeyTypesOf<Translation, ValidValues, ''>>
+>;
+
+type RecKeyTypesOf<Dir, FileType, Prefix extends string> = {
+	[P in keyof Dir & (string | number)]: Dir[P] extends FileType
+		? { [K in `${Prefix}${P}`]: Dir[P] }
+		: RecKeyTypesOf<Dir[P], FileType, `${Prefix}${P}.`>;
+}[keyof Dir & (string | number)];
+
+export type getKeyTypesObjectWithPrefix<Translation, Prefix> =
+	UnionToIntersection<
+		Id<RecKeyTypesWithPrefixOf<Translation, ValidValues, '', KeyPrefix>>
+	>;
+
+type RecKeyTypesWithPrefixOf<
+	Dir,
+	FileType,
+	Prefix extends string,
+	KeyPrefix
+> = {
+	[P in keyof Dir & (string | number)]: Dir[P] extends FileType
+		? { [K in RemoveKeyPrefix<`${Prefix}${P}`, KeyPrefix>]: Dir[P] }
+		: RecKeyTypesWithPrefixOf<Dir[P], FileType, `${Prefix}${P}.`, KeyPrefix>;
+}[keyof Dir & (string | number)];
