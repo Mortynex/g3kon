@@ -1,7 +1,7 @@
 {
-  "name": "t18",
+  "name": "@t18/cts",
   "version": "0.0.0-development",
-  "description": "Internationalization typescript library",
+  "description": "Centralization text store",
   "main": "./lib/src/index.js",
   "files": [
     "lib/**/*"
@@ -45,7 +45,7 @@
   "bugs": {
     "url": "https://github.com/Mortynex/t18/issues"
   },
-  "homepage": "https://github.com/ryansonshine/t18#readme",
+  "homepage": "https://github.com/Mortynex/t18#readme",
   "dependencies": {},
   "devDependencies": {
     "@types/jest": "^26.0.24",
