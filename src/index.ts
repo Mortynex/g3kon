@@ -1,140 +1,77 @@
 import {
-	getInterpolationFunctionKeys,
-	getAllTranslationKeys,
 	t18ClientOptions,
-	Translations,
-	UnionOmit,
 	ValidValues,
-	TranslationResource,
-	getFunctionArguments,
-	t18TranslateOptions,
-	getAllKeys,
-	RemoveKeyPrefix,
-	getInterpolationFunctionKeysWithoutPrefix,
-	getNonInterpolationFunctionKeysWithoutPrefix,
-	getFunctionArgumentsWithPrefix,
+	getKeyTypesObject,
+	Contents,
+	DeepContents,
+	InterpolationFunction,
+	getReturnType,
+	KeysExtractTypes,
+	ReturnableValues,
+	getTypeParameters,
 } from './typings';
 
-export class t18Client<T extends Translations, L extends string> {
-	private _resources: TranslationResource<T, L>[];
-	private _currentLanguage: L;
-	constructor({ resources }: t18ClientOptions<T, L>) {
-		resources = Array.isArray(resources) ? resources : [resources];
+export class t18Client<T extends Contents> {
+	private _store: Record<string, ValidValues>;
+	constructor({ content }: t18ClientOptions<T>) {
+		function recursiveGetKeys<ContentType extends Contents | DeepContents>(
+			content: ContentType,
+			prefix = ''
+		): Record<string, ContentType> {
+			let keys = {};
 
-		if (resources.length === 0) {
-			throw new Error('Invalid translation length');
+			for (const [name, value] of Object.entries(content)) {
+				const keyValue = `${prefix}${prefix.length !== 0 ? '.' : ''}${name}`;
+
+				if (typeof value === 'object') {
+					const recursiveKeys = recursiveGetKeys(value, keyValue);
+					keys = {
+						...keys,
+						...(typeof recursiveKeys === 'object' ? recursiveKeys : {}),
+					};
+				} else {
+					keys = {
+						...keys,
+						[keyValue]: value,
+					};
+				}
+			}
+
+			return keys;
 		}
 
-		this._resources = resources;
-
-		const defaultLanguage =
-			resources.length > 1
-				? resources.find(res => res.default === true)?.language
-				: resources[0].language;
-
-		if (!defaultLanguage) {
-			throw new Error('Default translation file was not set');
-		}
-
-		this._currentLanguage = defaultLanguage;
+		this._store = recursiveGetKeys(content) as unknown as Record<
+			string,
+			ValidValues
+		>; // ugly
 	}
 
-	changeLanguage(lng: L) {
-		this._currentLanguage = lng;
-	}
-
-	private _getTranslations(lng?: L) {
-		const translations = this._resources.find(
-			file => file.language === (lng ?? this._currentLanguage)
-		)?.translations;
-
-		if (translations === undefined) {
-			throw new Error('Invalid language');
-		}
-
-		return translations;
-	}
-
-	t<Key extends getInterpolationFunctionKeys<T>>(
+	get<Key extends KeysExtractTypes<T, InterpolationFunction>>(
 		key: Key,
-		args: getFunctionArguments<T, Key>
-	): string;
-	t(
-		key: UnionOmit<getAllTranslationKeys<T>, getInterpolationFunctionKeys<T>>
-	): string;
-	t(key: any, args?: any): string {
+		args: getTypeParameters<T, Key>
+	): getReturnType<getKeyTypesObject<T>, Key>;
+	get<Key extends KeysExtractTypes<T, ReturnableValues>>(
+		key: Key
+	): getReturnType<getKeyTypesObject<T>, Key>;
+	get(key: any, args?: any): ReturnableValues {
 		if (typeof key !== 'string') {
 			return 'INVALID KEY';
 		}
 
-		return this._translate({
-			key,
-			args,
-			lng: this._currentLanguage,
-		});
-	}
+		let value = this._store[key];
 
-	private _translate({ key, args, lng }: t18TranslateOptions) {
-		const objects = key.split('.');
-
-		let currentValue: ValidValues | Translations = this._getTranslations(lng);
-		for (const object of objects) {
-			if (typeof currentValue !== 'object') {
-				return 'INVALID PATH';
-			}
-
-			currentValue = currentValue[object];
-		}
-
-		const translation = currentValue;
-
-		if (typeof translation === 'function') {
+		if (typeof value === 'function') {
 			if (!args || !Array.isArray(args)) {
 				return 'INVALID INTERPOLATION FUNCTION ARGUMENTS';
 			}
 
-			const interpolatedString = translation(...args);
-			if (typeof interpolatedString !== 'string') {
-				return 'INVALID VALUE';
-			}
-
-			return interpolatedString;
+			value = value(...args);
 		}
 
-		if (typeof translation === 'object') {
+		if (typeof value === 'object') {
 			return 'INVALID PATH';
 		}
 
-		return translation;
-	}
-
-	getFixedT(lng?: L, keyPrefix?: getAllKeys<T>) {
-		type addToString<A extends string, B extends string> = `${A}${B}`;
-		type KeyPrefix = typeof keyPrefix;
-		type prefixed<kp> = kp extends string ? addToString<kp, '.'> : '';
-		type prefix = prefixed<KeyPrefix>;
-
-		const translateFunction = this._translate.bind(this);
-		const language = lng ?? this._currentLanguage;
-
-		function t<
-			Key extends getInterpolationFunctionKeysWithoutPrefix<T, prefix>
-		>(key: Key, args: any[]): string;
-		function t(
-			key: getNonInterpolationFunctionKeysWithoutPrefix<T, prefix>
-		): string;
-		function t(key: any, args?: any): string {
-			if (typeof key !== 'string') {
-				return 'INVALID KEY';
-			}
-
-			return translateFunction({
-				key,
-				args,
-				lng: language,
-			});
-		}
-
-		return t;
+		return value;
 	}
 }
