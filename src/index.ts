@@ -16,11 +16,11 @@ import {
 
 export class G3kon<T extends Contents> {
 	private _store: Record<string, ValidValues>;
-	constructor({ content }: G3konConstructorOptions<T>) {
-		const recursiveTransformKeys = (content: Contents, prefix = '') => {
+	constructor({ contents }: G3konConstructorOptions<T>) {
+		const recursiveTransformKeys = (contents: Contents, prefix = '') => {
 			let keys = {};
 
-			for (const [name, value] of Object.entries(content)) {
+			for (const [name, value] of Object.entries(contents)) {
 				const keyValue = `${prefix}${prefix.length !== 0 ? '.' : ''}${name}`;
 
 				if (typeof value === 'object') {
@@ -40,7 +40,7 @@ export class G3kon<T extends Contents> {
 			return keys;
 		};
 
-		this._store = recursiveTransformKeys(content);
+		this._store = recursiveTransformKeys(contents);
 	}
 
 	g<Key extends InterpolationKeys<T>>(
