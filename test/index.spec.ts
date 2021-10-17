@@ -5,6 +5,7 @@ describe('index', () => {
 		general: {
 			hello_world: 'Hello World!',
 			welcome: (name: string) => `Welcome ${name}`,
+			date: () => `Current time in ms: ${Date.now()}`,
 		},
 		users: {
 			actions: {
@@ -42,7 +43,7 @@ describe('index', () => {
 	describe('G3kon', () => {
 		it('should init', () => {
 			const g3kon = new G3kon({
-				content: contents,
+				contents: contents,
 			});
 
 			expect(g3kon).toBeDefined();
@@ -51,7 +52,7 @@ describe('index', () => {
 		it('should work 1 level deep', () => {
 			const helloWorld = 'Hello World!';
 			const g3kon = new G3kon({
-				content: {
+				contents: {
 					hello_world: helloWorld,
 				},
 			});
@@ -62,7 +63,7 @@ describe('index', () => {
 
 	describe('G3kon.g', () => {
 		const g3kon = new G3kon({
-			content: contents,
+			contents: contents,
 		});
 
 		it('should translate string', () => {
@@ -104,7 +105,7 @@ describe('index', () => {
 
 	describe('G3kon.getFixedG', () => {
 		const g3kon = new G3kon({
-			content: contents,
+			contents: contents,
 		});
 
 		it('should return defined value', () => {

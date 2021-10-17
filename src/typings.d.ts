@@ -1,5 +1,5 @@
 export interface G3konConstructorOptions<T> {
-	content: T;
+	contents: T;
 }
 
 export interface Contents {
