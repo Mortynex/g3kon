@@ -1,6 +1,5 @@
 # g3kon
 
-Easily manage text content.
 [![npm package][npm-img]][npm-url]
 [![Build Status][build-img]][build-url]
 [![Downloads][downloads-img]][downloads-url]
@@ -8,6 +7,10 @@ Easily manage text content.
 [![Code Coverage][codecov-img]][codecov-url]
 [![Commitizen Friendly][commitizen-img]][commitizen-url]
 [![Semantic Release][semantic-release-img]][semantic-release-url]
+
+g3kon is centralized content store built with Typescript. 
+g3kon is inspired by [i18next](https://github.com/i18next/i18next), 
+but rather than internationalization, g3kon focuses more on *centralization*
 
 - [Install](#install)
 - [Usage example](#usage-example)
