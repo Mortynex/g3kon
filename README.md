@@ -1,5 +1,6 @@
 # g3kon
 
+Easily manage text content.
 [![npm package][npm-img]][npm-url]
 [![Build Status][build-img]][build-url]
 [![Downloads][downloads-img]][downloads-url]
@@ -8,7 +9,168 @@
 [![Commitizen Friendly][commitizen-img]][commitizen-url]
 [![Semantic Release][semantic-release-img]][semantic-release-url]
 
-TODO: readme.md
+- [Install](#install)
+- [Usage example](#usage-example)
+- [API](#api)
+- [Options](#options)
+
+## Install
+
+Install with [npm](https://www.npmjs.com/):
+
+```sh
+$ npm install g3kon
+```
+
+## Usage example
+
+```ts
+import { G3kon } from 'g3ckon';
+
+const g3kon = new G3kon({
+	contents: {
+		general: {
+			hello_world: 'Hello World!',
+		},
+	},
+});
+
+console.log(g3kon.g('general.hello_world'));
+// => "Hello World!"
+```
+
+You can also have dynamic content with functions!
+
+```ts
+import { G3kon } from 'g3ckon';
+
+const g3kon = new G3kon({
+	contents: {
+		general: {
+			welcome: (name: string) => `Welcome ${name}!`,
+		},
+	},
+});
+
+console.log(g3kon.g('general.welcome', ['Bob']));
+// => "Welcome Bob!"
+```
+
+## API
+
+### G3kon
+
+Initialize a new `G3kon` with the given `options` data.
+
+**Params**
+
+- `options` **{Object}**: See all [available options](#options).
+
+**Example**
+
+```js
+import { G3kon } from 'g3ckon';
+
+new G3kon({
+	contents: {},
+});
+```
+
+### .g
+
+Get `value` from `key`
+
+**Params**
+
+- `key` **{String}**
+- `args` **{Array}**: Arguments for interpolation function, not required if key doesnt map to a non interpolation function
+
+- `returns` **{String | Number}**: Value that key maps to.
+
+**Example**
+
+```js
+const g3kon = new G3kon({
+	contents: {
+		general: {
+			hello_world: 'Hello World!',
+			welcome: (name: string) => `Welcome ${name}`,
+		},
+	},
+});
+
+g3kon.g('general.hello_world');
+// => "Hello World!"
+
+g3kon.g('general.welcome', ['Bob']);
+// => "Welcome Bob!"
+```
+
+### .getFixedG
+
+Get `value` from `key`
+
+**Params**
+
+- (Optional) `prefix` **{String}**: Prefix for the key
+
+- `returns` **{Function}**: Get function similar to `.g`
+
+**Example**
+
+```js
+const g3kon = new G3kon({
+	contents: {
+		general: {
+			hello_world: 'Hello World!',
+			welcome: (name: string) => `Welcome ${name}`,
+		},
+	},
+});
+
+// with prefix
+const generalG = g3kon.getFixedG('general');
+
+generalG('hello_world');
+// => "Hello World!"
+
+generalG('welcome', ['Bob']);
+// => "Welcome Bob!"
+
+// without prefix
+const g = g3kon.getFixedG('general');
+
+// same as g3kon.g
+g('general.hello_world');
+// => "Hello World!"
+
+g('general.welcome', ['Bob']);
+// => "Welcome Bob!"
+```
+
+## Options
+
+| **Option** | **Type** | **Required** | **Description** |
+| --- | --- | --- | --- |
+| `contents` | `object` | `true` | Object from which are keys generated and values retrieved. |
+
+## Example
+
+```js
+const g3kon = new G3kon({
+	contents: {
+		general: {
+			hello_world: 'Hello World!',
+			welcome: (name: string) => `Welcome ${name}`,
+		},
+	},
+});
+```
+
+### License
+
+Copyright © 2021, [Mortynex](https://github.com/Mortynex).
+Released under the [MIT License](LICENSE).
 
 [build-img]: https://github.com/Mortynex/g3kon/actions/workflows/release.yml/badge.svg
 [build-url]: https://github.com/Mortynex/g3kon/actions/workflows/release.yml
