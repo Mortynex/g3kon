@@ -1,4 +1,4 @@
-# t18
+# g3kon
 
 [![npm package][npm-img]][npm-url]
 [![Build Status][build-img]][build-url]
@@ -8,56 +8,183 @@
 [![Commitizen Friendly][commitizen-img]][commitizen-url]
 [![Semantic Release][semantic-release-img]][semantic-release-url]
 
-> t18 is strongly typed library inspired by i18next
+g3kon is centralized content store built with Typescript. 
+g3kon is inspired by [i18next](https://github.com/i18next/i18next), 
+but rather than internationalization, g3kon focuses more on *centralization*
+
+- [Install](#install)
+- [Usage example](#usage-example)
+- [API](#api)
+- [Options](#options)
 
 ## Install
 
-```bash
-npm install t18
+Install with [npm](https://www.npmjs.com/):
+
+```sh
+$ npm install g3kon
 ```
 
-## Usage
+## Usage example
 
 ```ts
-import { t18 } from 'my-package-name';
+import { G3kon } from 'g3ckon';
 
-const t18client = new t18({
-	translations: [
-		{
-			language: 'en',
-			translation: {
-				general: {
-					hello_world: 'Hello Word!',
-				},
-			},
+const g3kon = new G3kon({
+	contents: {
+		general: {
+			hello_world: 'Hello World!',
 		},
-	],
+	},
 });
 
-t18client.t('general.hello_world');
-//=> "Hello Word!"
+console.log(g3kon.g('general.hello_world'));
+// => "Hello World!"
+```
+
+You can also have dynamic content with functions!
+
+```ts
+import { G3kon } from 'g3ckon';
+
+const g3kon = new G3kon({
+	contents: {
+		general: {
+			welcome: (name: string) => `Welcome ${name}!`,
+		},
+	},
+});
+
+console.log(g3kon.g('general.welcome', ['Bob']));
+// => "Welcome Bob!"
 ```
 
 ## API
 
-### new t18(options)
+### G3kon
 
-#### options
+Initialize a new `G3kon` with the given `options` data.
 
-Type: `object`
+**Params**
 
-Lorem ipsum.
+- `options` **{Object}**: See all [available options](#options).
 
-[build-img]: https://github.com/ryansonshine/typescript-npm-package-template/actions/workflows/release.yml/badge.svg
-[build-url]: https://github.com/ryansonshine/typescript-npm-package-template/actions/workflows/release.yml
-[downloads-img]: https://img.shields.io/npm/dt/typescript-npm-package-template
-[downloads-url]: https://www.npmtrends.com/typescript-npm-package-template
-[npm-img]: https://img.shields.io/npm/v/typescript-npm-package-template
-[npm-url]: https://www.npmjs.com/package/typescript-npm-package-template
-[issues-img]: https://img.shields.io/github/issues/ryansonshine/typescript-npm-package-template
-[issues-url]: https://github.com/ryansonshine/typescript-npm-package-template/issues
-[codecov-img]: https://codecov.io/gh/ryansonshine/typescript-npm-package-template/branch/main/graph/badge.svg
-[codecov-url]: https://codecov.io/gh/ryansonshine/typescript-npm-package-template
+**Example**
+
+```js
+import { G3kon } from 'g3ckon';
+
+new G3kon({
+	contents: {},
+});
+```
+
+### .g
+
+Get `value` from `key`
+
+**Params**
+
+- `key` **{String}**
+- `args` **{Array}**: Arguments for interpolation function, not required if key doesnt map to a non interpolation function
+
+- `returns` **{String | Number}**: Value that key maps to.
+
+**Example**
+
+```js
+const g3kon = new G3kon({
+	contents: {
+		general: {
+			hello_world: 'Hello World!',
+			welcome: (name: string) => `Welcome ${name}`,
+		},
+	},
+});
+
+g3kon.g('general.hello_world');
+// => "Hello World!"
+
+g3kon.g('general.welcome', ['Bob']);
+// => "Welcome Bob!"
+```
+
+### .getFixedG
+
+Get `value` from `key`
+
+**Params**
+
+- (Optional) `prefix` **{String}**: Prefix for the key
+
+- `returns` **{Function}**: Get function similar to `.g`
+
+**Example**
+
+```js
+const g3kon = new G3kon({
+	contents: {
+		general: {
+			hello_world: 'Hello World!',
+			welcome: (name: string) => `Welcome ${name}`,
+		},
+	},
+});
+
+// with prefix
+const generalG = g3kon.getFixedG('general');
+
+generalG('hello_world');
+// => "Hello World!"
+
+generalG('welcome', ['Bob']);
+// => "Welcome Bob!"
+
+// without prefix
+const g = g3kon.getFixedG('general');
+
+// same as g3kon.g
+g('general.hello_world');
+// => "Hello World!"
+
+g('general.welcome', ['Bob']);
+// => "Welcome Bob!"
+```
+
+## Options
+
+| **Option** | **Type** | **Required** | **Description** |
+| --- | --- | --- | --- |
+| `contents` | `object` | `true` | Object from which are keys generated and values retrieved. |
+
+## Example
+
+```js
+const g3kon = new G3kon({
+	contents: {
+		general: {
+			hello_world: 'Hello World!',
+			welcome: (name: string) => `Welcome ${name}`,
+		},
+	},
+});
+```
+
+### License
+
+Copyright © 2021, [Mortynex](https://github.com/Mortynex).
+Released under the [MIT License](LICENSE).
+
+[build-img]: https://github.com/Mortynex/g3kon/actions/workflows/release.yml/badge.svg
+[build-url]: https://github.com/Mortynex/g3kon/actions/workflows/release.yml
+[downloads-img]: https://img.shields.io/npm/dt/g3kon
+[downloads-url]: https://www.npmtrends.com/g3kon
+[npm-img]: https://img.shields.io/npm/v/g3kon
+[npm-url]: https://www.npmjs.com/package/g3kon
+[issues-img]: https://img.shields.io/github/issues/Mortynex/g3kon
+[issues-url]: https://github.com/Mortynex/g3kon/issues
+[codecov-img]: https://codecov.io/gh/Mortynex/g3kon/branch/main/graph/badge.svg
+[codecov-url]: https://codecov.io/gh/Mortynex/g3kon
 [semantic-release-img]: https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg
 [semantic-release-url]: https://github.com/semantic-release/semantic-release
 [commitizen-img]: https://img.shields.io/badge/commitizen-friendly-brightgreen.svg
