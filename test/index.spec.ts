@@ -1,5 +1,4 @@
-import { kill } from 'process';
-import { t18Client } from '../src';
+import { G3kon } from '../src';
 
 describe('index', () => {
 	const contents = {
@@ -40,32 +39,43 @@ describe('index', () => {
 		},
 	};
 
-	describe('t18Client', () => {
+	describe('G3kon', () => {
 		it('should init', () => {
-			const t18 = new t18Client({
+			const g3kon = new G3kon({
 				content: contents,
 			});
 
-			expect(t18).toBeDefined();
+			expect(g3kon).toBeDefined();
+		});
+
+		it('should work 1 level deep', () => {
+			const helloWorld = 'Hello World!';
+			const g3kon = new G3kon({
+				content: {
+					hello_world: helloWorld,
+				},
+			});
+
+			expect(g3kon.g('hello_world')).toBe(helloWorld);
 		});
 	});
 
-	describe('t18Client.t', () => {
-		const t18 = new t18Client({
+	describe('G3kon.g', () => {
+		const g3kon = new G3kon({
 			content: contents,
 		});
 
 		it('should translate string', () => {
-			expect(t18.get('general.hello_world')).toBe(contents.general.hello_world);
+			expect(g3kon.g('general.hello_world')).toBe(contents.general.hello_world);
 		});
 
 		it('should translate number', () => {
-			expect(t18.get('ids.admin_role_id')).toBe(contents.ids.admin_role_id);
+			expect(g3kon.g('ids.admin_role_id')).toBe(contents.ids.admin_role_id);
 		});
 
 		it('should be able to retrieve atleast 8 nested object down', () => {
 			expect(
-				t18.get(
+				g3kon.g(
 					'deep.deep.deep.deep.deep.deep.imeanreallydeep.evendeeper.thatsenough'
 				)
 			).toBe(
@@ -77,7 +87,7 @@ describe('index', () => {
 		it('should to use string interpolation function', () => {
 			const username = 'Tom';
 
-			expect(t18.get('users.actions.user_left', [username])).toBe(
+			expect(g3kon.g('users.actions.user_left', [username])).toBe(
 				contents.users.actions.user_left(username)
 			);
 		});
@@ -86,9 +96,56 @@ describe('index', () => {
 			const num1 = 5;
 			const num2 = 8;
 
-			expect(t18.get('numbers.add', [num1, num2])).toBe(
+			expect(g3kon.g('numbers.add', [num1, num2])).toBe(
 				contents.numbers.add(num1, num2)
 			);
+		});
+	});
+
+	describe('G3kon.getFixedG', () => {
+		const g3kon = new G3kon({
+			content: contents,
+		});
+
+		it('should return defined value', () => {
+			const g = g3kon.getFixedG('numbers');
+
+			expect(g).toBeDefined();
+		});
+
+		it('should get a string value', () => {
+			const g = g3kon.getFixedG('general');
+
+			expect(g('hello_world')).toBe(contents.general.hello_world);
+		});
+
+		it('should get a number value', () => {
+			const g = g3kon.getFixedG('ids');
+
+			expect(g('admin_role_id')).toBe(contents.ids.admin_role_id);
+		});
+
+		it('should get a number interpolation function', () => {
+			const g = g3kon.getFixedG('numbers');
+
+			const num1 = 5;
+			const num2 = 23;
+
+			expect(g('add', [num1, num2])).toBe(contents.numbers.add(num1, num2));
+		});
+
+		it('should get a string interpolation function', () => {
+			const g = g3kon.getFixedG('general');
+
+			const name = 'Jacob';
+
+			expect(g('welcome', [name])).toBe(contents.general.welcome(name));
+		});
+
+		it('should get an empty g', () => {
+			const g = g3kon.getFixedG();
+
+			expect(g).toBeDefined();
 		});
 	});
 });

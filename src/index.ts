@@ -1,30 +1,30 @@
 import {
-	t18ClientOptions,
+	G3konConstructorOptions,
 	ValidValues,
-	getKeyTypesObject,
 	Contents,
-	DeepContents,
-	InterpolationFunction,
-	getReturnType,
-	KeysExtractTypes,
+	InterpolationKeys,
+	NonInterpolationKeys,
+	ReturnType,
 	ReturnableValues,
-	getTypeParameters,
+	InterpolationArguments,
+	RemovePrefix,
+	AddPrefix,
+	Prefixes,
+	GetFunction,
+	PrefixedGetFunction,
 } from './typings';
 
-export class t18Client<T extends Contents> {
+export class G3kon<T extends Contents> {
 	private _store: Record<string, ValidValues>;
-	constructor({ content }: t18ClientOptions<T>) {
-		function recursiveGetKeys<ContentType extends Contents | DeepContents>(
-			content: ContentType,
-			prefix = ''
-		): Record<string, ContentType> {
+	constructor({ content }: G3konConstructorOptions<T>) {
+		const recursiveTransformKeys = (content: Contents, prefix = '') => {
 			let keys = {};
 
 			for (const [name, value] of Object.entries(content)) {
 				const keyValue = `${prefix}${prefix.length !== 0 ? '.' : ''}${name}`;
 
 				if (typeof value === 'object') {
-					const recursiveKeys = recursiveGetKeys(value, keyValue);
+					const recursiveKeys = recursiveTransformKeys(value, keyValue);
 					keys = {
 						...keys,
 						...(typeof recursiveKeys === 'object' ? recursiveKeys : {}),
@@ -38,38 +38,67 @@ export class t18Client<T extends Contents> {
 			}
 
 			return keys;
-		}
+		};
 
-		this._store = recursiveGetKeys(content) as unknown as Record<
-			string,
-			ValidValues
-		>; // ugly
+		this._store = recursiveTransformKeys(content);
 	}
 
-	get<Key extends KeysExtractTypes<T, InterpolationFunction>>(
+	g<Key extends InterpolationKeys<T>>(
 		key: Key,
-		args: getTypeParameters<T, Key>
-	): getReturnType<getKeyTypesObject<T>, Key>;
-	get<Key extends KeysExtractTypes<T, ReturnableValues>>(
-		key: Key
-	): getReturnType<getKeyTypesObject<T>, Key>;
-	get(key: any, args?: any): ReturnableValues {
+		args: InterpolationArguments<T, Key>
+	): ReturnType<T, Key>;
+	g<Key extends NonInterpolationKeys<T>>(key: Key): ReturnType<T, Key>;
+	g(key: any, args?: any): ReturnableValues {
 		if (typeof key !== 'string') {
 			return 'INVALID KEY';
 		}
 
+		return this._getValue(key, args);
+	}
+
+	getFixedG(): GetFunction<T>;
+	getFixedG<KeyPrefix extends Prefixes<T>>(
+		prefix?: KeyPrefix
+	): PrefixedGetFunction<T, AddPrefix<'.', KeyPrefix>>;
+	getFixedG<KeyPrefix extends Prefixes<T>>(prefix?: KeyPrefix) {
+		if (prefix === undefined || prefix === '') {
+			return this.g.bind(this);
+		}
+		type Prefix = AddPrefix<'.', KeyPrefix>;
+
+		const getFunction = this._getValue.bind(this);
+
+		function get<Key extends RemovePrefix<InterpolationKeys<T>, Prefix>>(
+			key: Key,
+			args: InterpolationArguments<T, AddPrefix<Key, Prefix>>
+		): ReturnType<T, AddPrefix<Key, Prefix>>;
+		function get<Key extends RemovePrefix<NonInterpolationKeys<T>, Prefix>>(
+			key: Key
+		): ReturnType<T, AddPrefix<Key, Prefix>>;
+		function get(key: any, args?: any): ReturnableValues {
+			if (typeof key !== 'string' || typeof prefix !== 'string') {
+				return 'INVALID KEY';
+			}
+
+			return getFunction(`${String(prefix)}.${String(key)}`, args);
+		}
+
+		return get;
+	}
+
+	private _getValue(key: string, args?: any[]): ReturnableValues {
 		let value = this._store[key];
 
 		if (typeof value === 'function') {
 			if (!args || !Array.isArray(args)) {
-				return 'INVALID INTERPOLATION FUNCTION ARGUMENTS';
+				throw new Error('INVALID INTERPOLATION FUNCTION ARGUMENTS');
 			}
 
 			value = value(...args);
 		}
 
-		if (typeof value === 'object') {
-			return 'INVALID PATH';
+		if (typeof value === 'object' || value === undefined) {
+			throw new Error('INVALID KEY');
 		}
 
 		return value;
